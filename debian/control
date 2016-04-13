@@ -1,0 +1,16 @@
+Source: bps-monitor
+Section: unknown
+Priority: optional
+Maintainer: Jaap Joris Vens <jj@rtts.eu>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/JaapJoris/bps-monitor
+
+Package: bps-monitor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Monitoring script for the Best Practices in Statistics (BPS) web application
+ This package installs a number of monitoring scripts that can be used
+ to monitor the BPS web application. It is specifically tailored to the
+ deployment specifics at Tilburg University, and hence not suitable for
+ general use.

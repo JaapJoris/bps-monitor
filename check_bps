@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+import sys
+import requests
+from termcolor import colored
+
+STATE_OK = 0
+STATE_WARNING = 1
+STATE_CRITICAL = 2
+STATE_UNKNOWN = 3
+
+exit_status = STATE_OK
+
+def check_bps():
+    HTTP_URL = 'http://bps.uvt.nl/'
+    HTTPS_URL = 'https://bps.uvt.nl/'
+    SSO_URL = 'https://sso.uvt.nl/login?service=https%3A%2F%2Fbps.uvt.nl%2Flogin%2F%3Fnext%3D%252F'
+
+    r = requests.get(HTTP_URL)
+
+    check('Requests over plain HTTP are redirected',
+          r.history[0].is_redirect)
+    check('Plain HTTP requests are redirected to ' + HTTPS_URL,
+          r.history[1].url == HTTPS_URL)
+    check('Cookieless requests are redirected',
+          r.history[1].is_redirect)
+    check('Cookieless requests are redirected to the login page',
+          r.history[2].url == HTTPS_URL + 'login/?next=/')
+    check('Requests to the login page are redirected',
+          r.history[2].is_redirect)
+    check('Requests to the login page are redirected to the SSO server',
+          r.url == SSO_URL)
+    check('The SSO server responds with 200 OK',
+          r.status_code == requests.codes.OK)
+
+def check(message, succeeded):
+    if succeeded:
+        show('  OK  ', 'green', message)
+    else:
+        show('FAILED', 'red', message)
+        global exit_status
+        exit_status = STATE_CRITICAL
+
+def show(status, color, message):
+    if sys.stdout.isatty():
+        status = colored(status, color, attrs=['bold'])
+    print('[{}] {}'.format(status, message))
+
+if __name__ == '__main__':
+    try:
+        check_bps()
+        exit(exit_status)
+    except Exception as e:
+        show('ERROR', 'red', e)
+        exit(STATE_UNKNOWN)
